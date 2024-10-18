@@ -20,6 +20,7 @@ export default class MyPlayer extends Player {
   private playContainerBody: Phaser.Physics.Arcade.Body
   private chairOnSit?: Chair
   public joystickMovement?: JoystickMovement
+  private static PLAYER_MAP?: Map<integer,integer>;
   constructor(
     scene: Phaser.Scene,
     x: number,

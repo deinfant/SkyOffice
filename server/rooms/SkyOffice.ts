@@ -111,6 +111,9 @@ export class SkyOffice extends Room<OfficeState> {
 
     // when receiving updatePlayerName message, call the PlayerUpdateNameCommand
     this.onMessage(Message.UPDATE_PLAYER_NAME, (client, message: { name: string }) => {
+      if (name.length > 64){
+        return
+      }
       this.dispatcher.dispatch(new PlayerUpdateNameCommand(), {
         client,
         name: message.name,
@@ -166,6 +169,7 @@ export class SkyOffice extends Room<OfficeState> {
   }
 
   onJoin(client: Client, options: any) {
+    console.log(this.state.players)
     this.state.players.set(client.sessionId, new Player())
     client.send(Message.SEND_ROOM_DATA, {
       id: this.roomId,

@@ -19,6 +19,7 @@ export default class WebRTC {
     this.network = network
     console.log('userId:', userId)
     console.log('sanitizedId:', sanitizedId)
+    document.title = userId;
     this.myPeer.on('error', (err) => {
       console.log(err.type)
       console.error(err)

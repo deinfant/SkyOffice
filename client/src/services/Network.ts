@@ -20,6 +20,7 @@ import {
   pushPlayerLeftMessage,
 } from '../stores/ChatStore'
 import { setWhiteboardUrls } from '../stores/WhiteboardStore'
+import { Exception } from 'sass'
 
 export default class Network {
   private client: Client
@@ -110,6 +111,7 @@ export default class Network {
 
           // when a new player finished setting up player name
           if (field === 'name' && value !== '') {
+            console.log('i am the storm tyhat is apporachigmg[;gkghk,ldteh')
             phaserEvents.emit(Event.PLAYER_JOINED, player, key)
             store.dispatch(setPlayerNameMap({ id: key, name: value }))
             store.dispatch(pushPlayerJoinedMessage(value))
@@ -162,6 +164,7 @@ export default class Network {
 
     // when the server sends room data
     this.room.onMessage(Message.SEND_ROOM_DATA, (content) => {
+      console.log(content)
       store.dispatch(setJoinedRoomData(content))
     })
 
@@ -205,7 +208,8 @@ export default class Network {
 
   // method to register event listener and call back function when a player joined
   onPlayerJoined(callback: (Player: IPlayer, key: string) => void, context?: any) {
-    phaserEvents.on(Event.PLAYER_JOINED, callback, context)
+    phaserEvents.on(Event.PLAYER_JOINED, callback, context)//sometimes too late
+
   }
 
   // method to register event listener and call back function when a player left
@@ -245,6 +249,7 @@ export default class Network {
   readyToConnect() {
     this.room?.send(Message.READY_TO_CONNECT)
     phaserEvents.emit(Event.MY_PLAYER_READY)
+    console.log('connected')
   }
 
   // method to send ready-to-connect signal to Colyseus server

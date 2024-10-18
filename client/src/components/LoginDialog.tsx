@@ -153,6 +153,7 @@ export default function LoginDialog() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+
     if (name === '') {
       setNameFieldEmpty(true)
     } else if (roomJoined) {
@@ -205,6 +206,7 @@ export default function LoginDialog() {
             color="secondary"
             error={nameFieldEmpty}
             helperText={nameFieldEmpty && 'Name is required'}
+            inputProps={{maxLength: 64}}
             onInput={(e) => {
               setName((e.target as HTMLInputElement).value)
             }}

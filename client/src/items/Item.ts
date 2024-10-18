@@ -19,12 +19,13 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
     const innerText = this.scene.add
       .text(0, 0, text)
       .setFontFamily('Arial')
-      .setFontSize(12)
+      .setFontSize(48)
+      .setScale(0.25, 0.25)
       .setColor('#000000')
 
     // set dialogBox slightly larger than the text in it
-    const dialogBoxWidth = innerText.width + 4
-    const dialogBoxHeight = innerText.height + 2
+    const dialogBoxWidth = innerText.width*0.25 + 4
+    const dialogBoxHeight = innerText.height*0.25 + 2
     const dialogBoxX = this.x - dialogBoxWidth * 0.5
     const dialogBoxY = this.y + this.height * 0.5
 
@@ -49,12 +50,13 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
     const innerText = this.scene.add
       .text(0, 0, text)
       .setFontFamily('Arial')
-      .setFontSize(12)
+      .setFontSize(48)
+      .setScale(0.25, 0.25)
       .setColor('#000000')
 
     // set dialogBox slightly larger than the text in it
-    const statusBoxWidth = innerText.width + 4
-    const statusBoxHeight = innerText.height + 2
+    const statusBoxWidth = innerText.width*0.25 + 4
+    const statusBoxHeight = innerText.height*0.25 + 2
     const statusBoxX = this.x - statusBoxWidth * 0.5
     const statusBoxY = this.y - this.height * 0.25
     this.statusBox.add(

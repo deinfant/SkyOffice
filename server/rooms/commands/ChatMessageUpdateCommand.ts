@@ -13,7 +13,6 @@ export default class ChatMessageUpdateCommand extends Command<IOfficeState, Payl
     const { client, content } = data
     const player = this.room.state.players.get(client.sessionId)
     const chatMessages = this.room.state.chatMessages
-
     if (!chatMessages) return
 
     /**

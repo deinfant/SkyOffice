@@ -21,6 +21,7 @@ import { ItemType } from '../../../types/Items'
 import store from '../stores'
 import { setFocused, setShowChat } from '../stores/ChatStore'
 import { NavKeys, Keyboard } from '../../../types/KeyboardState'
+import { Clock } from 'colyseus'
 
 export default class Game extends Phaser.Scene {
   network!: Network
@@ -224,8 +225,11 @@ export default class Game extends Phaser.Scene {
   // function to add new player to the otherPlayer group
   private handlePlayerJoined(newPlayer: IPlayer, id: string) {
     const otherPlayer = this.add.otherPlayer(newPlayer.x, newPlayer.y, 'adam', id, newPlayer.name)
+    
     this.otherPlayers.add(otherPlayer)
     this.otherPlayerMap.set(id, otherPlayer)
+    console.log(this.otherPlayers);
+    console.log(this.otherPlayerMap);
   }
 
   // function to remove the player who left from the otherPlayer group

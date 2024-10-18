@@ -48,9 +48,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.playerName = this.scene.add
       .text(0, 0, '')
       .setFontFamily('Arial')
-      .setFontSize(12)
+      .setFontSize(48)
+      .setScale(0.25, 0.25)
       .setColor('#000000')
       .setOrigin(0.5)
+  
     this.playerContainer.add(this.playerName)
 
     this.scene.physics.world.enable(this.playerContainer)
@@ -70,15 +72,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     const innerText = this.scene.add
       .text(0, 0, dialogBubbleText, { wordWrap: { width: 165, useAdvancedWrap: true } })
       .setFontFamily('Arial')
-      .setFontSize(12)
+      .setFontSize(48)
+      .setScale(0.25, 0.25)
       .setColor('#000000')
       .setOrigin(0.5)
 
     // set dialogBox slightly larger than the text in it
-    const innerTextHeight = innerText.height
-    const innerTextWidth = innerText.width
+    const innerTextHeight = innerText.height*0.25
+    const innerTextWidth = innerText.width*0.25
 
-    innerText.setY(-innerTextHeight / 2 - this.playerName.height / 2)
+    innerText.setY(-innerTextHeight / 2 - this.playerName.height / 4)
     const dialogBoxWidth = innerTextWidth + 10
     const dialogBoxHeight = innerTextHeight + 3
     const dialogBoxX = innerText.x - innerTextWidth / 2 - 5
