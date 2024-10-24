@@ -53,6 +53,7 @@ export default class Game extends Phaser.Scene {
     this.input.keyboard.on('keydown-ENTER', (event) => {
       store.dispatch(setShowChat(true))
       store.dispatch(setFocused(true))
+      this.input.keyboard.resetKeys() // prevent player keep moving after pressing enter while holding movement keys
     })
     this.input.keyboard.on('keydown-ESC', (event) => {
       store.dispatch(setShowChat(false))
