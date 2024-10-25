@@ -169,7 +169,6 @@ export class SkyOffice extends Room<OfficeState> {
   }
 
   onJoin(client: Client, options: any) {
-    console.log(this.state.players)
     this.state.players.set(client.sessionId, new Player())
     client.send(Message.SEND_ROOM_DATA, {
       id: this.roomId,

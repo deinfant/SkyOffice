@@ -102,7 +102,6 @@ export default class Network {
     // new instance added to the players MapSchema
     this.room.state.players.onAdd = (player: IPlayer, key: string) => {
       if (key === this.mySessionId) return
-
       // track changes on every child object inside the players MapSchema
       player.onChange = (changes) => {
         changes.forEach((change) => {
@@ -119,7 +118,6 @@ export default class Network {
         })
       }
     }
-
     // an instance removed from the players MapSchema
     this.room.state.players.onRemove = (player: IPlayer, key: string) => {
       phaserEvents.emit(Event.PLAYER_LEFT, key)
@@ -164,7 +162,6 @@ export default class Network {
 
     // when the server sends room data
     this.room.onMessage(Message.SEND_ROOM_DATA, (content) => {
-      console.log(content)
       store.dispatch(setJoinedRoomData(content))
     })
 
@@ -183,6 +180,20 @@ export default class Network {
       const computerState = store.getState().computer
       computerState.shareScreenManager?.onUserLeft(clientId)
     })
+
+
+
+
+
+
+
+    // make sure otherPlayer is created in game
+    setTimeout(()=>{
+      this.room?.state.players.forEach((player, id)=>{
+        phaserEvents.emit(Event.PLAYER_JOINED, player, id)
+        phaserEvents.emit(Event.PLAYER_UPDATED, "anim", player.anim , id)
+      });
+    },1);
   }
 
   // method to register event listener and call back function when a item user added
