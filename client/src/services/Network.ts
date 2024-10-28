@@ -253,6 +253,7 @@ export default class Network {
 
   // method to send player name to Colyseus server
   updatePlayerName(currentName: string) {
+    if (currentName.length > 64) {return}
     this.room?.send(Message.UPDATE_PLAYER_NAME, { name: currentName })
   }
 

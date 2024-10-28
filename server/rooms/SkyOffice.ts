@@ -144,6 +144,7 @@ export class SkyOffice extends Room<OfficeState> {
     // when a player send a chat message, update the message array and broadcast to all connected clients except the sender
     this.onMessage(Message.ADD_CHAT_MESSAGE, (client, message: { content: string }) => {
       // update the message array (so that players join later can also see the message)
+      if (message.content.length > 64) {return}
       this.dispatcher.dispatch(new ChatMessageUpdateCommand(), {
         client,
         content: message.content,

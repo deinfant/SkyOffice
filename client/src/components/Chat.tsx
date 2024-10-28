@@ -185,8 +185,9 @@ export default function Chat() {
   }
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    
     event.preventDefault()
-
+    
     // this is added because without this, 2 things happen at the same
     // time when Enter is pressed, (1) the inputRef gets focus (from
     // useEffect) and (2) the form gets submitted (right after the input
@@ -266,6 +267,7 @@ export default function Chat() {
                 value={inputValue}
                 onKeyDown={handleKeyDown}
                 onChange={handleChange}
+                inputProps={{maxLength: 64}}
                 onFocus={() => {
                   if (!focused) {
                     dispatch(setFocused(true))
