@@ -22,12 +22,16 @@ import store from '../stores'
 import { setFocused, setShowChat } from '../stores/ChatStore'
 import { NavKeys, Keyboard } from '../../../types/KeyboardState'
 import { Clock } from 'colyseus'
+import { Console } from 'console'
+var keys = new Map<string, Phaser.Input.Keyboard.Key>();
+keys['E'] = Phaser.Input.Keyboard.Key;
+keys['R'] = Phaser.Input.Keyboard.Key;
+keys['Q'] = Phaser.Input.Keyboard.Key;
+
 
 export default class Game extends Phaser.Scene {
   network!: Network
   private cursors!: NavKeys
-  private keyE!: Phaser.Input.Keyboard.Key
-  private keyR!: Phaser.Input.Keyboard.Key
   private map!: Phaser.Tilemaps.Tilemap
   myPlayer!: MyPlayer
   private playerSelector!: Phaser.GameObjects.Zone
@@ -46,9 +50,17 @@ export default class Game extends Phaser.Scene {
       ...(this.input.keyboard.addKeys('W,S,A,D') as Keyboard),
     }
 
-    // maybe we can have a dedicated method for adding keys if more keys are needed in the future
-    this.keyE = this.input.keyboard.addKey('E')
-    this.keyR = this.input.keyboard.addKey('R')
+    // maybe we can have a dedicated method for adding keys if more keys are needed in the future 
+    
+
+    for (const key in keys) {
+      keys[key] = this.input.keyboard.addKey(key);
+      console.log("NIGA NIGA NIGA")
+      console.log(keys[key])
+    }
+
+  
+
     this.input.keyboard.disableGlobalCapture()
     this.input.keyboard.on('keydown-ENTER', (event) => {
       store.dispatch(setShowChat(true))
@@ -74,6 +86,18 @@ export default class Game extends Phaser.Scene {
     } else {
       this.network = data.network
     }
+
+    const fartEmitter = this.add.particles('adam',0, {
+      lifespan: 2000,
+      speed: { min: 200, max: 400 },
+      angle: 330,
+      gravityY: 300,
+      visible: false,
+    });
+    this.input.on('pointerdown', pointer => {
+      console.log("ayo")
+      fartEmitter.emitParticleAt(this.myPlayer.x, this.myPlayer.y,4);
+  });
 
     createCharacterAnims(this.anims)
 
@@ -290,7 +314,22 @@ export default class Game extends Phaser.Scene {
   update(t: number, dt: number) {
     if (this.myPlayer && this.network) {
       this.playerSelector.update(this.myPlayer, this.cursors)
-      this.myPlayer.update(this.playerSelector, this.cursors, this.keyE, this.keyR, this.network)
+      this.myPlayer.update(this.playerSelector, this.cursors, keys, this.network)
+
+      if (Phaser.Input.Keyboard.JustDown(keys['Q'])) {
+
+
+
+        
+        //fartEmitter.explode(15);
+
+
+
+
+
+      }
+
+
     }
   }
 }

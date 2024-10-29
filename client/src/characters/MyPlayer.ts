@@ -52,15 +52,14 @@ export default class MyPlayer extends Player {
   update(
     playerSelector: PlayerSelector,
     cursors: NavKeys,
-    keyE: Phaser.Input.Keyboard.Key,
-    keyR: Phaser.Input.Keyboard.Key,
+    keys: Map<string, Phaser.Input.Keyboard.Key>, //this is the keyssss dont worry man 
     network: Network
   ) {
     if (!cursors) return
 
     const item = playerSelector.selectedItem
 
-    if (Phaser.Input.Keyboard.JustDown(keyR)) {
+    if (Phaser.Input.Keyboard.JustDown(keys['R'])) {
       switch (item?.itemType) {
         case ItemType.COMPUTER:
           const computer = item as Computer
@@ -78,10 +77,13 @@ export default class MyPlayer extends Player {
       }
     }
 
+    
+
+
     switch (this.playerBehavior) {
       case PlayerBehavior.IDLE:
         // if press E in front of selected chair
-        if (Phaser.Input.Keyboard.JustDown(keyE) && item?.itemType === ItemType.CHAIR) {
+        if (Phaser.Input.Keyboard.JustDown(keys['E']) && item?.itemType === ItemType.CHAIR) {
           const chairItem = item as Chair
           /**
            * move player to the chair and play sit animation
@@ -185,7 +187,7 @@ export default class MyPlayer extends Player {
 
       case PlayerBehavior.SITTING:
         // back to idle if player press E while sitting
-        if (Phaser.Input.Keyboard.JustDown(keyE)) {
+        if (Phaser.Input.Keyboard.JustDown(keys['E'])) {
           const parts = this.anims.currentAnim.key.split('_')
           parts[1] = 'idle'
           this.play(parts.join('_'), true)
