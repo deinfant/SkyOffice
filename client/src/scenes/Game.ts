@@ -23,6 +23,7 @@ import { setFocused, setShowChat } from '../stores/ChatStore'
 import { NavKeys, Keyboard } from '../../../types/KeyboardState'
 import { Clock } from 'colyseus'
 import { Console } from 'console'
+import { Vector } from 'matter'
 var keys = new Map<string, Phaser.Input.Keyboard.Key>();
 keys['E'] = Phaser.Input.Keyboard.Key;
 keys['R'] = Phaser.Input.Keyboard.Key;
@@ -39,6 +40,9 @@ export default class Game extends Phaser.Scene {
   private otherPlayerMap = new Map<string, OtherPlayer>()
   computerMap = new Map<string, Computer>()
   private whiteboardMap = new Map<string, Whiteboard>()
+  
+  acceleration = new Phaser.Math.Vector2();
+
 
   constructor() {
     super('game')
@@ -87,17 +91,7 @@ export default class Game extends Phaser.Scene {
       this.network = data.network
     }
 
-    const fartEmitter = this.add.particles('adam',0, {
-      lifespan: 2000,
-      speed: { min: 200, max: 400 },
-      angle: 330,
-      gravityY: 300,
-      visible: false,
-    });
-    this.input.on('pointerdown', pointer => {
-      console.log("ayo")
-      fartEmitter.emitParticleAt(this.myPlayer.x, this.myPlayer.y,4);
-  });
+    
 
     createCharacterAnims(this.anims)
 
@@ -111,6 +105,28 @@ export default class Game extends Phaser.Scene {
 
     this.myPlayer = this.add.myPlayer(705, 500, 'adam', this.network.mySessionId)
     this.playerSelector = new PlayerSelector(this, 0, 0, 16, 16)
+
+//fart shut up
+    
+    window.onclick = () => {
+      window.onclick = () => {
+        console.log(this.myPlayer)
+        const fartEmitter = this.add.particles(this.myPlayer.playerTexture).createEmitter({
+          lifespan: 1000,
+          speed: { min: 0, max: 100 },
+          angle: Phaser.Math.RadToDeg(this.myPlayer.body.velocity.angle()),
+          particleBringToTop: true,
+        });
+        fartEmitter.explode(10, this.myPlayer.x, this.myPlayer.y);
+        this.acceleration.add(new Phaser.Math.Vector2(this.myPlayer.body.velocity.x*20,this.myPlayer.body.velocity.y*20))
+        setTimeout(() => {
+          fartEmitter.remove();
+        }, 1000);
+
+
+        //fartEmitter.emitParticleAt(this.myPlayer.x, this.myPlayer.y,4);
+      };
+    };
 
     // import chair objects from Tiled map to Phaser
     const chairs = this.physics.add.staticGroup({ classType: Chair })
@@ -315,7 +331,8 @@ export default class Game extends Phaser.Scene {
     if (this.myPlayer && this.network) {
       this.playerSelector.update(this.myPlayer, this.cursors)
       this.myPlayer.update(this.playerSelector, this.cursors, keys, this.network)
-
+      this.acceleration.multiply(new Phaser.Math.Vector2(0.7, 0.7))
+      this.myPlayer.setVelocity(this.myPlayer.body.velocity.x+this.acceleration.x, this.myPlayer.body.velocity.y+this.acceleration.y)
       if (Phaser.Input.Keyboard.JustDown(keys['Q'])) {
 
 
