@@ -17,13 +17,13 @@ import Network from '../services/Network'
 import { IPlayer } from '../../../types/IOfficeState'
 import { PlayerBehavior } from '../../../types/PlayerBehavior'
 import { ItemType } from '../../../types/Items'
-
 import store from '../stores'
 import { setFocused, setShowChat } from '../stores/ChatStore'
 import { NavKeys, Keyboard } from '../../../types/KeyboardState'
 import { Clock } from 'colyseus'
 import { Console } from 'console'
-import { Vector } from 'matter'
+const vector2 = Phaser.Math.Vector2;
+
 var keys = new Map<string, Phaser.Input.Keyboard.Key>();
 keys['E'] = Phaser.Input.Keyboard.Key;
 keys['R'] = Phaser.Input.Keyboard.Key;
@@ -110,21 +110,8 @@ export default class Game extends Phaser.Scene {
     
     window.onclick = () => {
       window.onclick = () => {
-        console.log(this.myPlayer)
-        const fartEmitter = this.add.particles(this.myPlayer.playerTexture).createEmitter({
-          lifespan: 1000,
-          speed: { min: 0, max: 100 },
-          angle: Phaser.Math.RadToDeg(this.myPlayer.body.velocity.angle()),
-          particleBringToTop: true,
-        });
-        fartEmitter.explode(10, this.myPlayer.x, this.myPlayer.y);
-        this.acceleration.add(new Phaser.Math.Vector2(this.myPlayer.body.velocity.x*20,this.myPlayer.body.velocity.y*20))
-        setTimeout(() => {
-          fartEmitter.remove();
-        }, 1000);
-
-
-        //fartEmitter.emitParticleAt(this.myPlayer.x, this.myPlayer.y,4);
+        this.acceleration.add((this.myPlayer.body.velocity).multiply(new Phaser.Math.Vector2(20, 20)))
+        this.map.putTileAtWorldXY(4, this.myPlayer.x, this.myPlayer.y)
       };
     };
 
@@ -332,21 +319,8 @@ export default class Game extends Phaser.Scene {
       this.playerSelector.update(this.myPlayer, this.cursors)
       this.myPlayer.update(this.playerSelector, this.cursors, keys, this.network)
       this.acceleration.multiply(new Phaser.Math.Vector2(0.7, 0.7))
-      this.myPlayer.setVelocity(this.myPlayer.body.velocity.x+this.acceleration.x, this.myPlayer.body.velocity.y+this.acceleration.y)
-      if (Phaser.Input.Keyboard.JustDown(keys['Q'])) {
-
-
-
-        
-        //fartEmitter.explode(15);
-
-
-
-
-
-      }
-
-
+      const newVelocity = this.myPlayer.body.velocity.add(this.acceleration)
+      this.myPlayer.setVelocity(newVelocity.x, newVelocity.y);
     }
   }
 }

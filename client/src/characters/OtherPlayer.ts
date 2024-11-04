@@ -4,6 +4,7 @@ import MyPlayer from './MyPlayer'
 import { sittingShiftData } from './Player'
 import WebRTC from '../web/WebRTC'
 import { Event, phaserEvents } from '../events/EventCenter'
+import { Vector } from 'matter'
 
 export default class OtherPlayer extends Player {
   private targetPosition: [number, number]
@@ -96,16 +97,16 @@ export default class OtherPlayer extends Player {
   preUpdate(t: number, dt: number) {
     super.preUpdate(t, dt)
 
-    // if Phaser has not updated the canvas (when the game tab is not active) for more than 1 sec
-    // directly snap player to their current locations
-    if (this.lastUpdateTimestamp && t - this.lastUpdateTimestamp > 750) {
-      this.lastUpdateTimestamp = t
-      this.x = this.targetPosition[0]
-      this.y = this.targetPosition[1]
-      this.playerContainer.x = this.targetPosition[0]
-      this.playerContainer.y = this.targetPosition[1] - 30
-      return
-    }
+    // // if Phaser has not updated the canvas (when the game tab is not active) for more than 1 sec
+    // // directly snap player to their current locations
+    // if (this.lastUpdateTimestamp && t - this.lastUpdateTimestamp > 750) {
+    //   this.lastUpdateTimestamp = t
+    //   this.x = this.targetPosition[0]
+    //   this.y = this.targetPosition[1]
+    //   this.playerContainer.x = this.targetPosition[0]
+    //   this.playerContainer.y = this.targetPosition[1] - 30
+    //   return
+    // }
 
     this.lastUpdateTimestamp = t
     this.setDepth(this.y) // change player.depth based on player.y
@@ -120,37 +121,52 @@ export default class OtherPlayer extends Player {
       }
     }
 
-    const speed = 200 // speed is in unit of pixels per second
-    const delta = (speed / 1000) * dt // minimum distance that a player can move in a frame (dt is in unit of ms)
-    let dx = this.targetPosition[0] - this.x
-    let dy = this.targetPosition[1] - this.y
+    // const speed = 200 // speed is in unit of pixels per second
+    // const delta = (speed / 1000) * dt // minimum distance that a player can move in a frame (dt is in unit of ms)
+    // let dx = this.targetPosition[0] - this.x
+    // let dy = this.targetPosition[1] - this.y
 
-    // if the player is close enough to the target position, directly snap the player to that position
-    if (Math.abs(dx) < delta) {
-      this.x = this.targetPosition[0]
-      this.playerContainer.x = this.targetPosition[0]
-      dx = 0
-    }
-    if (Math.abs(dy) < delta) {
-      this.y = this.targetPosition[1]
-      this.playerContainer.y = this.targetPosition[1] - 30
-      dy = 0
-    }
+    // // if the player is close enough to the target position, directly snap the player to that position
+    // if (Math.abs(dx) < delta) {
+    //   this.x = this.targetPosition[0]
+    //   this.playerContainer.x = this.targetPosition[0]
+    //   dx = 0
+    // }
+    // if (Math.abs(dy) < delta) {
+    //   this.y = this.targetPosition[1]
+    //   this.playerContainer.y = this.targetPosition[1] - 30
+    //   dy = 0
+    // }
 
-    // if the player is still far from target position, impose a constant velocity towards it
-    let vx = 0
-    let vy = 0
-    if (dx > 0) vx += speed
-    else if (dx < 0) vx -= speed
-    if (dy > 0) vy += speed
-    else if (dy < 0) vy -= speed
+    // // if the player is still far from target position, impose a constant velocity towards it
+    // let vx = 0
+    // let vy = 0
+    // if (dx > 0) vx += speed
+    // else if (dx < 0) vx -= speed
+    // if (dy > 0) vy += speed
+    // else if (dy < 0) vy -= speed
 
-    // update character velocity
-    this.setVelocity(vx, vy)
-    this.body.velocity.setLength(speed)
-    // also update playerNameContainer velocity
-    this.playContainerBody.setVelocity(vx, vy)
-    this.playContainerBody.velocity.setLength(speed)
+    // // update character velocity
+    // this.setVelocity(vx, vy)
+    // this.body.velocity.setLength(speed)
+    // // also update playerNameContainer velocity
+    // this.playContainerBody.setVelocity(vx, vy)
+    // this.playContainerBody.velocity.setLength(speed)
+
+    {    
+      let dx = this.targetPosition[0] - this.x
+      let dy = this.targetPosition[1] - this.y
+      const magnitude = new Phaser.Math.Vector2(dx,dy).length() * (dt/1000) * 2000
+      // update character velocity
+      this.setVelocity(dx, dy)
+      this.body.velocity.setLength(magnitude)
+      // also update playerNameContainer velocity
+      this.playContainerBody.setVelocity(dx, dy)
+      this.playContainerBody.velocity.setLength(magnitude)
+
+      this.playerContainer.x = this.x
+      this.playerContainer.y = this.y - 30
+    } 
 
     // while currently connected with myPlayer
     // if myPlayer and the otherPlayer stop overlapping, delete video stream

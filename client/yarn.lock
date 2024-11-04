@@ -542,6 +542,11 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
+"@mapeditor/tiled-api@^1.11.0":
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@mapeditor/tiled-api/-/tiled-api-1.11.0.tgz#519ea5136f6615c0f3e306f14c3797d3014f78be"
+  integrity sha512-cE+11MlCDfVKn0uDgYqdPlqyJ13o2pEKKI7WqN/MV8drvnTTibG4DGeCr009u9WJI8qvovVkDtshC9ko8UDOAA==
+
 "@mui/base@5.0.0-alpha.79":
   version "5.0.0-alpha.79"
   resolved "https://registry.yarnpkg.com/@mui/base/-/base-5.0.0-alpha.79.tgz#1994a6382a162b52ec93b66f3c74d193820d2365"

@@ -130,8 +130,7 @@ export default class MyPlayer extends Player {
         }
 
         const speed = 200
-        let vx = 0
-        let vy = 0
+        let v = new Phaser.Math.Vector2(0,0);
 
         let joystickLeft = false
         let joystickRight = false
@@ -145,32 +144,34 @@ export default class MyPlayer extends Player {
           joystickDown = this.joystickMovement.direction.down
         }
 
-        if (cursors.left?.isDown || cursors.A?.isDown || joystickLeft) vx -= speed
-        if (cursors.right?.isDown || cursors.D?.isDown || joystickRight) vx += speed
+        if (cursors.left?.isDown || cursors.A?.isDown || joystickLeft) v.x -= speed
+        if (cursors.right?.isDown || cursors.D?.isDown || joystickRight) v.x += speed
         if (cursors.up?.isDown || cursors.W?.isDown || joystickUp) {
-          vy -= speed
+          v.y -= speed
           this.setDepth(this.y) //change player.depth if player.y changes
         }
         if (cursors.down?.isDown || cursors.S?.isDown || joystickDown) {
-          vy += speed
+          v.y += speed
           this.setDepth(this.y) //change player.depth if player.y changes
         }
         // update character velocity
-        this.setVelocity(vx, vy)
+        this.setVelocity(v.x, v.y)
         this.body.velocity.setLength(speed)
-        // also update playerNameContainer velocity
-        this.playContainerBody.setVelocity(vx, vy)
-        this.playContainerBody.velocity.setLength(speed)
+        this.playerContainer.x = this.x
+        this.playerContainer.y = this.y - 30
+        // this.playContainerBody.setVelocity(v.x, v.y)
+        this.playContainerBody.velocity = new Phaser.Math.Vector2(v).setLength(speed);
+
 
         // update animation according to velocity and send new location and anim to server
-        if (vx !== 0 || vy !== 0) network.updatePlayer(this.x, this.y, this.anims.currentAnim.key)
-        if (vx > 0) {
+        if (v.x !== 0 || v.y !== 0) network.updatePlayer(this.x, this.y, this.anims.currentAnim.key)
+        if (v.x > 0) {
           this.play(`${this.playerTexture}_run_right`, true)
-        } else if (vx < 0) {
+        } else if (v.x < 0) {
           this.play(`${this.playerTexture}_run_left`, true)
-        } else if (vy > 0) {
+        } else if (v.y > 0) {
           this.play(`${this.playerTexture}_run_down`, true)
-        } else if (vy < 0) {
+        } else if (v.y < 0) {
           this.play(`${this.playerTexture}_run_up`, true)
         } else {
           const parts = this.anims.currentAnim.key.split('_')

@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/kevinshen56714/SkyOffice#readme",
   "devDependencies": {
+    "@mapeditor/tiled-api": "^1.11.0",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "copyfiles": "^2.4.1",
