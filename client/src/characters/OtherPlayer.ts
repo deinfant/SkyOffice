@@ -121,38 +121,6 @@ export default class OtherPlayer extends Player {
       }
     }
 
-    // const speed = 200 // speed is in unit of pixels per second
-    // const delta = (speed / 1000) * dt // minimum distance that a player can move in a frame (dt is in unit of ms)
-    // let dx = this.targetPosition[0] - this.x
-    // let dy = this.targetPosition[1] - this.y
-
-    // // if the player is close enough to the target position, directly snap the player to that position
-    // if (Math.abs(dx) < delta) {
-    //   this.x = this.targetPosition[0]
-    //   this.playerContainer.x = this.targetPosition[0]
-    //   dx = 0
-    // }
-    // if (Math.abs(dy) < delta) {
-    //   this.y = this.targetPosition[1]
-    //   this.playerContainer.y = this.targetPosition[1] - 30
-    //   dy = 0
-    // }
-
-    // // if the player is still far from target position, impose a constant velocity towards it
-    // let vx = 0
-    // let vy = 0
-    // if (dx > 0) vx += speed
-    // else if (dx < 0) vx -= speed
-    // if (dy > 0) vy += speed
-    // else if (dy < 0) vy -= speed
-
-    // // update character velocity
-    // this.setVelocity(vx, vy)
-    // this.body.velocity.setLength(speed)
-    // // also update playerNameContainer velocity
-    // this.playContainerBody.setVelocity(vx, vy)
-    // this.playContainerBody.velocity.setLength(speed)
-
     {    
       let dx = this.targetPosition[0] - this.x
       let dy = this.targetPosition[1] - this.y

@@ -20,6 +20,7 @@ import { ItemType } from '../../../types/Items'
 import store from '../stores'
 import { setFocused, setShowChat } from '../stores/ChatStore'
 import { NavKeys, Keyboard } from '../../../types/KeyboardState'
+import { phaserEvents, Event } from '../events/EventCenter'
 import { Clock } from 'colyseus'
 import { Console } from 'console'
 const vector2 = Phaser.Math.Vector2;
@@ -110,10 +111,17 @@ export default class Game extends Phaser.Scene {
     
     window.onclick = () => {
       window.onclick = () => {
+        const pointer = this.input.activePointer;
         this.acceleration.add((this.myPlayer.body.velocity).multiply(new Phaser.Math.Vector2(20, 20)))
-        this.map.putTileAtWorldXY(4, this.myPlayer.x, this.myPlayer.y)
       };
     };
+
+    window.addEventListener('keydown', (event) => {
+      // Check if the 'W' key (keyCode 87) was pressed
+      if (event.key.toLowerCase() === 't') {
+        this.network.placeNewTile(136, this.myPlayer.x, this.myPlayer.y, true)
+      }
+    });
 
     // import chair objects from Tiled map to Phaser
     const chairs = this.physics.add.staticGroup({ classType: Chair })
@@ -198,6 +206,7 @@ export default class Game extends Phaser.Scene {
     this.network.onItemUserAdded(this.handleItemUserAdded, this)
     this.network.onItemUserRemoved(this.handleItemUserRemoved, this)
     this.network.onChatMessageAdded(this.handleChatMessageAdded, this)
+    this.network.onNewTilePlaced(this.handleTilePlacement, this)
   }
 
   private handleItemSelectorOverlap(playerSelector, selectionItem) {
@@ -312,6 +321,12 @@ export default class Game extends Phaser.Scene {
   private handleChatMessageAdded(playerId: string, content: string) {
     const otherPlayer = this.otherPlayerMap.get(playerId)
     otherPlayer?.updateDialogBubble(content)
+  }
+
+  private handleTilePlacement(playerId: string, content: any){
+    console.log(content)
+    const newtile = this.map.putTileAtWorldXY(content.tile, content.worldX, content.worldY,true)
+    if (content.canCollide) {newtile.setCollision(true, true, true, true, true)}
   }
 
   update(t: number, dt: number) {

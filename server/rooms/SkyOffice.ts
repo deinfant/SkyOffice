@@ -120,6 +120,17 @@ export class SkyOffice extends Room<OfficeState> {
       })
     })
 
+
+    this.onMessage(Message.PLACE_TILE, (client, message: {tile:any, worldX:any , worldY:any , canCollide?:any , layer?:any}) => {
+      console.log('reciveed tile place request')
+      this.broadcast(
+        Message.PLACE_TILE,
+        { clientId: client.sessionId, content: message},
+        //{ except: client }
+      )
+    })
+
+
     // when a player is ready to connect, call the PlayerReadyToConnectCommand
     this.onMessage(Message.READY_TO_CONNECT, (client) => {
       const player = this.state.players.get(client.sessionId)
@@ -140,6 +151,10 @@ export class SkyOffice extends Room<OfficeState> {
         }
       })
     })
+
+
+
+    
 
     // when a player send a chat message, update the message array and broadcast to all connected clients except the sender
     this.onMessage(Message.ADD_CHAT_MESSAGE, (client, message: { content: string }) => {

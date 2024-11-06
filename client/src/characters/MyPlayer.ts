@@ -77,8 +77,6 @@ export default class MyPlayer extends Player {
       }
     }
 
-    
-
 
     switch (this.playerBehavior) {
       case PlayerBehavior.IDLE:

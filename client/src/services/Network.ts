@@ -110,7 +110,7 @@ export default class Network {
 
           // when a new player finished setting up player name
           if (field === 'name' && value !== '') {
-            console.log('i am the storm tyhat is apporachigmg[;gkghk,ldteh')
+            console.log('player joined, the storm that was approaching')
             phaserEvents.emit(Event.PLAYER_JOINED, player, key)
             store.dispatch(setPlayerNameMap({ id: key, name: value }))
             store.dispatch(pushPlayerJoinedMessage(value))
@@ -169,6 +169,12 @@ export default class Network {
     this.room.onMessage(Message.ADD_CHAT_MESSAGE, ({ clientId, content }) => {
       phaserEvents.emit(Event.UPDATE_DIALOG_BUBBLE, clientId, content)
     })
+    //when user places a tile
+    this.room.onMessage(Message.PLACE_TILE, ({ clientId, content }) => {
+      console.log(content)
+      phaserEvents.emit(Event.TILE_PLACED, clientId, content)
+      //phaserEvents.emit(Event.TILE_PLACED, content.tile, content.x, content.y, content.canCollide, content.layer)
+    })
 
     // when a peer disconnects with myPeer
     this.room.onMessage(Message.DISCONNECT_STREAM, (clientId: string) => {
@@ -182,7 +188,7 @@ export default class Network {
     })
 
 
-
+    
 
 
 
@@ -196,6 +202,8 @@ export default class Network {
     },1);
   }
 
+
+  
   // method to register event listener and call back function when a item user added
   onChatMessageAdded(callback: (playerId: string, content: string) => void, context?: any) {
     phaserEvents.on(Event.UPDATE_DIALOG_BUBBLE, callback, context)
@@ -219,7 +227,7 @@ export default class Network {
 
   // method to register event listener and call back function when a player joined
   onPlayerJoined(callback: (Player: IPlayer, key: string) => void, context?: any) {
-    phaserEvents.on(Event.PLAYER_JOINED, callback, context)//sometimes too late
+    phaserEvents.on(Event.PLAYER_JOINED, callback, context)
 
   }
 
@@ -246,6 +254,13 @@ export default class Network {
     phaserEvents.on(Event.PLAYER_UPDATED, callback, context)
   }
 
+  onNewTilePlaced(
+    callback: any,
+    context?: any 
+  ) {
+    phaserEvents.on(Event.TILE_PLACED, callback, context)
+  }
+
   // method to send player updates to Colyseus server
   updatePlayer(currentX: number, currentY: number, currentAnim: string) {
     this.room?.send(Message.UPDATE_PLAYER, { x: currentX, y: currentY, anim: currentAnim })
@@ -256,6 +271,11 @@ export default class Network {
     if (currentName.length > 64) {return}
     this.room?.send(Message.UPDATE_PLAYER_NAME, { name: currentName })
   }
+
+  placeNewTile(tile: number | Phaser.Tilemaps.Tile, worldX: number, worldY: number, canCollide?: boolean, layer?: string | number | Phaser.Tilemaps.TilemapLayer) {
+    this.room?.send(Message.PLACE_TILE, {tile, worldX, worldY, canCollide, layer})
+  }
+
 
   // method to send ready-to-connect signal to Colyseus server
   readyToConnect() {
