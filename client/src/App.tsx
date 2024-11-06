@@ -11,6 +11,8 @@ import VideoConnectionDialog from './components/VideoConnectionDialog'
 import Chat from './components/Chat'
 import HelperButtonGroup from './components/HelperButtonGroup'
 import MobileVirtualJoystick from './components/MobileVirtualJoystick'
+import FileUploadComponent from './components/FileUpload'
+
 
 const Backdrop = styled.div`
   position: absolute;
@@ -26,6 +28,8 @@ function App() {
   const roomJoined = useAppSelector((state) => state.room.roomJoined)
 
   let ui: JSX.Element
+
+
   if (loggedIn) {
     if (computerDialogOpen) {
       /* Render ComputerDialog if user is using a computer. */
@@ -57,6 +61,7 @@ function App() {
       {ui}
       {/* Render HelperButtonGroup if no dialogs are opened. */}
       {!computerDialogOpen && !whiteboardDialogOpen && <HelperButtonGroup />}
+      {<FileUploadComponent />}
     </Backdrop>
   )
 }

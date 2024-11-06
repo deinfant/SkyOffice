@@ -23,13 +23,12 @@ import { NavKeys, Keyboard } from '../../../types/KeyboardState'
 import { phaserEvents, Event } from '../events/EventCenter'
 import { Clock } from 'colyseus'
 import { Console } from 'console'
-const vector2 = Phaser.Math.Vector2;
+const vector2 = Phaser.Math.Vector2
 
-var keys = new Map<string, Phaser.Input.Keyboard.Key>();
-keys['E'] = Phaser.Input.Keyboard.Key;
-keys['R'] = Phaser.Input.Keyboard.Key;
-keys['Q'] = Phaser.Input.Keyboard.Key;
-
+var keys = new Map<string, Phaser.Input.Keyboard.Key>()
+keys['E'] = Phaser.Input.Keyboard.Key
+keys['R'] = Phaser.Input.Keyboard.Key
+keys['Q'] = Phaser.Input.Keyboard.Key
 
 export default class Game extends Phaser.Scene {
   network!: Network
@@ -41,9 +40,8 @@ export default class Game extends Phaser.Scene {
   private otherPlayerMap = new Map<string, OtherPlayer>()
   computerMap = new Map<string, Computer>()
   private whiteboardMap = new Map<string, Whiteboard>()
-  
-  acceleration = new Phaser.Math.Vector2();
 
+  acceleration = new Phaser.Math.Vector2()
 
   constructor() {
     super('game')
@@ -55,16 +53,13 @@ export default class Game extends Phaser.Scene {
       ...(this.input.keyboard.addKeys('W,S,A,D') as Keyboard),
     }
 
-    // maybe we can have a dedicated method for adding keys if more keys are needed in the future 
-    
+    // maybe we can have a dedicated method for adding keys if more keys are needed in the future
 
     for (const key in keys) {
-      keys[key] = this.input.keyboard.addKey(key);
-      console.log("NIGA NIGA NIGA")
+      keys[key] = this.input.keyboard.addKey(key)
+      console.log('NIGA NIGA NIGA')
       console.log(keys[key])
     }
-
-  
 
     this.input.keyboard.disableGlobalCapture()
     this.input.keyboard.on('keydown-ENTER', (event) => {
@@ -92,8 +87,6 @@ export default class Game extends Phaser.Scene {
       this.network = data.network
     }
 
-    
-
     createCharacterAnims(this.anims)
 
     this.map = this.make.tilemap({ key: 'tilemap' })
@@ -107,21 +100,24 @@ export default class Game extends Phaser.Scene {
     this.myPlayer = this.add.myPlayer(705, 500, 'adam', this.network.mySessionId)
     this.playerSelector = new PlayerSelector(this, 0, 0, 16, 16)
 
-//fart shut up
-    
+    //fart shut up
+
     window.onclick = () => {
       window.onclick = () => {
-        const pointer = this.input.activePointer;
-        this.acceleration.add((this.myPlayer.body.velocity).multiply(new Phaser.Math.Vector2(20, 20)))
-      };
-    };
+        const pointer = this.input.activePointer
+        this.acceleration.add(this.myPlayer.body.velocity.multiply(new Phaser.Math.Vector2(20, 20)))
+      }
+    }
 
     window.addEventListener('keydown', (event) => {
       // Check if the 'W' key (keyCode 87) was pressed
-      if (event.key.toLowerCase() === 't') {
+      const key = event.key.toLowerCase()
+      if (key == 't') {
         this.network.placeNewTile(136, this.myPlayer.x, this.myPlayer.y, true)
+      }else if (key == 'y'){
+
       }
-    });
+    })
 
     // import chair objects from Tiled map to Phaser
     const chairs = this.physics.add.staticGroup({ classType: Chair })
@@ -261,11 +257,11 @@ export default class Game extends Phaser.Scene {
 
   // function to add new player to the otherPlayer group
   private handlePlayerJoined(newPlayer: IPlayer, id: string) {
-    if (id === this.myPlayer.playerId) return;
-    if (this.otherPlayerMap.has(id)) return;
-    
+    if (id === this.myPlayer.playerId) return
+    if (this.otherPlayerMap.has(id)) return
+
     const otherPlayer = this.add.otherPlayer(newPlayer.x, newPlayer.y, 'adam', id, newPlayer.name)
-    
+
     this.otherPlayers.add(otherPlayer)
     this.otherPlayerMap.set(id, otherPlayer)
   }
@@ -323,11 +319,56 @@ export default class Game extends Phaser.Scene {
     otherPlayer?.updateDialogBubble(content)
   }
 
-  private handleTilePlacement(playerId: string, content: any){
+  private handleTilePlacement(playerId: string, content: any) {
     console.log(content)
-    const newtile = this.map.putTileAtWorldXY(content.tile, content.worldX, content.worldY,true)
-    if (content.canCollide) {newtile.setCollision(true, true, true, true, true)}
+    const newtile = this.map.putTileAtWorldXY(content.tile, content.worldX, content.worldY, true)
+    if (content.canCollide) {
+      newtile.setCollision(true, true, true, true, true)
+    }
+
+    let modifiedMapData = this.map.layers.map((layer) => {
+      return {
+        name: layer.name,
+        data: layer.data.map((row) => {
+          return row.map((tile) => {
+            // Only store tile index (and other properties if needed)
+            return tile.index // or tile properties if you want
+          })
+        }),
+      }
+    })
+
+    // Convert to JSON
+    let jsonString = JSON.stringify(modifiedMapData)
+
+    // You could then save it to a file on the client side (e.g., via Blob or FileSaver.js)
+    let blob = new Blob([jsonString], { type: 'application/json' })
+    let link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = 'modifiedMap.json'
+    link.click()
   }
+
+
+  public loadMapFromJSON(jsonContent: any) {
+    if (this.map) {
+      this.map.destroy() // Destroy the old map if it exists
+    }
+
+    this.map = this.make.tilemap({ key: 'tilemap' })
+    const FloorAndGround = this.map.addTilesetImage('FloorAndGround', 'tiles_wall')
+
+    jsonContent.layers.forEach((layerData) => {
+      this.map.createLayer(layerData.name, FloorAndGround)
+    })
+  }
+
+
+
+
+
+
+///////////UPDATE FUNCTION HOLY SHIT HOLY SHIT UPDATE FUNCTION?? IMPOSSIBLE//////////////////////////////
 
   update(t: number, dt: number) {
     if (this.myPlayer && this.network) {
@@ -335,7 +376,10 @@ export default class Game extends Phaser.Scene {
       this.myPlayer.update(this.playerSelector, this.cursors, keys, this.network)
       this.acceleration.multiply(new Phaser.Math.Vector2(0.7, 0.7))
       const newVelocity = this.myPlayer.body.velocity.add(this.acceleration)
-      this.myPlayer.setVelocity(newVelocity.x, newVelocity.y);
+      this.myPlayer.setVelocity(newVelocity.x, newVelocity.y)
     }
   }
+
+
 }
+
