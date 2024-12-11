@@ -6,6 +6,20 @@ import WebRTC from '../web/WebRTC'
 import { Event, phaserEvents } from '../events/EventCenter'
 import { Vector } from 'matter'
 
+function normalizeToMagnitude(x, y, targetMagnitude) {
+  // Step 1: Calculate the original magnitude of the vector
+  const magnitude = Math.sqrt(x * x + y * y)
+
+  // Step 2: Calculate the scaling factor
+  const scale = magnitude > 0 ? targetMagnitude / magnitude : 0
+
+  // Step 3: Scale the vector components
+  const newX = x * scale
+  const newY = y * scale
+
+  return { x: newX, y: newY }
+}
+
 export default class OtherPlayer extends Player {
   private targetPosition: [number, number]
   private lastUpdateTimestamp?: number
@@ -94,6 +108,7 @@ export default class OtherPlayer extends Player {
   }
 
   /** preUpdate is called every frame for every game object. */
+
   preUpdate(t: number, dt: number) {
     super.preUpdate(t, dt)
 
@@ -121,20 +136,29 @@ export default class OtherPlayer extends Player {
       }
     }
 
-    {    
+    {
+      const speed = 200 // speed is in unit of pixels per second
+      const delta = ((speed + 10) / 1000) * dt
       let dx = this.targetPosition[0] - this.x
       let dy = this.targetPosition[1] - this.y
-      const magnitude = new Phaser.Math.Vector2(dx,dy).length() * (dt/1000) * 2000
+      const maxRange = delta * 20
+console.log(Math.abs(dy))
+      if (Math.abs(dx) < delta || Math.abs(dx) > maxRange) {
+        this.x = this.targetPosition[0]
+        dx = 0
+      }
+      if (Math.abs(dy) < delta || Math.abs(dy) > maxRange) {
+        this.y = this.targetPosition[1]
+        dy = 0
+      }
+
+      const newXY = normalizeToMagnitude(dx, dy, speed)
       // update character velocity
-      this.setVelocity(dx, dy)
-      this.body.velocity.setLength(magnitude)
-      // also update playerNameContainer velocity
-      this.playContainerBody.setVelocity(dx, dy)
-      this.playContainerBody.velocity.setLength(magnitude)
+      this.setVelocity(newXY.x, newXY.y)
 
       this.playerContainer.x = this.x
       this.playerContainer.y = this.y - 30
-    } 
+    }
 
     // while currently connected with myPlayer
     // if myPlayer and the otherPlayer stop overlapping, delete video stream

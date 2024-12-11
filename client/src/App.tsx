@@ -11,8 +11,8 @@ import VideoConnectionDialog from './components/VideoConnectionDialog'
 import Chat from './components/Chat'
 import HelperButtonGroup from './components/HelperButtonGroup'
 import MobileVirtualJoystick from './components/MobileVirtualJoystick'
-import FileUploadComponent from './components/FileUpload'
-
+import FileUploadComponent from './components/FileHandler'
+import SidebarComponent from './components/Sidebar'
 
 const Backdrop = styled.div`
   position: absolute;
@@ -61,7 +61,8 @@ function App() {
       {ui}
       {/* Render HelperButtonGroup if no dialogs are opened. */}
       {!computerDialogOpen && !whiteboardDialogOpen && <HelperButtonGroup />}
-      {<FileUploadComponent />}
+      {roomJoined && <FileUploadComponent />}
+      {roomJoined && <SidebarComponent />}
     </Backdrop>
   )
 }

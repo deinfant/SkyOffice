@@ -18,7 +18,12 @@ import { getColorByString } from '../util'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { MessageType, setFocused, setShowChat } from '../stores/ChatStore'
 
-const Backdrop = styled.div`
+// Import the Draggable component from react-draggable
+import Draggable from 'react-draggable'
+import { Resizeable } from 'react-resizeable'
+import { ShowChart } from '@mui/icons-material'
+
+const Backdrop = styled.div<{ isMovable: boolean }>`
   position: fixed;
   bottom: 60px;
   left: 0;
@@ -26,7 +31,27 @@ const Backdrop = styled.div`
   width: 500px;
   max-height: 50%;
   max-width: 100%;
+  cursor: ${({ isMovable }) => (isMovable ? 'move' : 'unset')};
 `
+
+// const Backdrop = styled.div`
+//   position: fixed;
+//   bottom: 60px;
+//   left: 0;
+//   height: 400px;
+//   width: 500px;
+//   max-height: 50%;
+//   max-width: 100%;
+//   background-color: #333;
+//   border-radius: 8px;
+//   overflow: hidden;
+//   transition: all 0.3s ease;
+//   z-index: 1000;
+//   cursor: move; /* Changes the cursor when dragging */
+//   display: flex;
+//   flex-direction: column;
+//   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+// `;
 
 const Wrapper = styled.div`
   position: relative;
@@ -178,27 +203,18 @@ export default function Chat() {
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Escape') {
-      // move focus back to the game
       inputRef.current?.blur()
       dispatch(setShowChat(false))
     }
   }
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    
     event.preventDefault()
-    
-    // this is added because without this, 2 things happen at the same
-    // time when Enter is pressed, (1) the inputRef gets focus (from
-    // useEffect) and (2) the form gets submitted (right after the input
-    // gets focused)
     if (!readyToSubmit) {
       setReadyToSubmit(true)
       return
     }
-    // move focus back to the game
     inputRef.current?.blur()
-
     const val = inputValue.trim()
     setInputValue('')
     if (val) {
@@ -222,83 +238,91 @@ export default function Chat() {
   }, [chatMessages, showChat])
 
   return (
-    <Backdrop>
-      <Wrapper>
-        {showChat ? (
-          <>
-            <ChatHeader>
-              <h3>Chat</h3>
-              <IconButton
-                aria-label="close dialog"
-                className="close"
-                onClick={() => dispatch(setShowChat(false))}
-                size="small"
-              >
-                <CloseIcon />
-              </IconButton>
-            </ChatHeader>
-            <ChatBox>
-              {chatMessages.map(({ messageType, chatMessage }, index) => (
-                <Message chatMessage={chatMessage} messageType={messageType} key={index} />
-              ))}
-              <div ref={messagesEndRef} />
-              {showEmojiPicker && (
-                <EmojiPickerWrapper>
-                  <Picker
-                    theme="dark"
-                    showSkinTones={false}
-                    showPreview={false}
-                    onSelect={(emoji) => {
-                      setInputValue(inputValue + emoji.native)
-                      setShowEmojiPicker(!showEmojiPicker)
-                      dispatch(setFocused(true))
+    <Resizeable>
+      <Draggable bounds="parent" disabled = {!showChat} allowAnyClick = {false}>
+        <Backdrop isMovable = {showChat}>
+          <Wrapper>
+            {showChat ? (
+              <>
+                <ChatHeader>
+                  <h3>Chat</h3>
+                  <IconButton
+                    aria-label="close dialog"
+                    className="close"
+                    onClick={() => dispatch(setShowChat(false))}
+                    size="small"
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </ChatHeader>
+                <ChatBox>
+                  {chatMessages.map(({ messageType, chatMessage }, index) => (
+                    <Message chatMessage={chatMessage} messageType={messageType} key={index} />
+                  ))}
+                  <div ref={messagesEndRef} />
+                  {showEmojiPicker && (
+                    <EmojiPickerWrapper>
+                      <Picker
+                        theme="dark"
+                        showSkinTones={false}
+                        showPreview={false}
+                        onSelect={(emoji) => {
+                          setInputValue(inputValue + emoji.native)
+                          setShowEmojiPicker(!showEmojiPicker)
+                          dispatch(setFocused(true))
+                        }}
+                        exclude={['recent', 'flags']}
+                      />
+                    </EmojiPickerWrapper>
+                  )}
+                </ChatBox>
+                <InputWrapper onSubmit={handleSubmit}>
+                  <InputTextField
+                    inputRef={inputRef}
+                    autoFocus={focused}
+                    fullWidth
+                    placeholder="Press Enter to chat"
+                    value={inputValue}
+                    onKeyDown={handleKeyDown}
+                    onChange={handleChange}
+                    inputProps={{ maxLength: 64 }}
+                    onFocus={() => {
+                      if (!focused) {
+                        dispatch(setFocused(true))
+                        setReadyToSubmit(true)
+                      }
                     }}
-                    exclude={['recent', 'flags']}
+                    onBlur={() => {
+                      dispatch(setFocused(false))
+                      setReadyToSubmit(false)
+                    }}
                   />
-                </EmojiPickerWrapper>
-              )}
-            </ChatBox>
-            <InputWrapper onSubmit={handleSubmit}>
-              <InputTextField
-                inputRef={inputRef}
-                autoFocus={focused}
-                fullWidth
-                placeholder="Press Enter to chat"
-                value={inputValue}
-                onKeyDown={handleKeyDown}
-                onChange={handleChange}
-                inputProps={{maxLength: 64}}
-                onFocus={() => {
-                  if (!focused) {
+                  <IconButton
+                    aria-label="emoji"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  >
+                    <InsertEmoticonIcon />
+                  </IconButton>
+                </InputWrapper>
+              </>
+            ) : (
+              <FabWrapper>
+                <Fab
+                  color="secondary"
+                  aria-label="showChat"
+                  size="small"
+                  onClick={() => {
+                    dispatch(setShowChat(true))
                     dispatch(setFocused(true))
-                    setReadyToSubmit(true)
-                  }
-                }}
-                onBlur={() => {
-                  dispatch(setFocused(false))
-                  setReadyToSubmit(false)
-                }}
-              />
-              <IconButton aria-label="emoji" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
-                <InsertEmoticonIcon />
-              </IconButton>
-            </InputWrapper>
-          </>
-        ) : (
-          <FabWrapper>
-            <Fab
-              color="secondary"
-              aria-label="showChat"
-              onClick={() => {
-                dispatch(setShowChat(true))
-                dispatch(setFocused(true))
-              }}
-            >
-              <ChatBubbleOutlineIcon />
-            </Fab>
-          </FabWrapper>
-        )}
-      </Wrapper>
-    </Backdrop>
+                  }}
+                >
+                  <ChatBubbleOutlineIcon />
+                </Fab>
+              </FabWrapper>
+            )}
+          </Wrapper>
+        </Backdrop>
+      </Draggable>
+    </Resizeable>
   )
 }

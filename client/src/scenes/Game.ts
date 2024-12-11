@@ -20,9 +20,12 @@ import { ItemType } from '../../../types/Items'
 import store from '../stores'
 import { setFocused, setShowChat } from '../stores/ChatStore'
 import { NavKeys, Keyboard } from '../../../types/KeyboardState'
+import { tilePlaceHash, TilePlaceLogTemplate, tileImages } from '../globals'
 import { phaserEvents, Event } from '../events/EventCenter'
 import { Clock } from 'colyseus'
-import { Console } from 'console'
+import { Console, log } from 'console'
+import { rejects } from 'assert'
+import { resourceUsage } from 'process'
 const vector2 = Phaser.Math.Vector2
 
 var keys = new Map<string, Phaser.Input.Keyboard.Key>()
@@ -30,10 +33,15 @@ keys['E'] = Phaser.Input.Keyboard.Key
 keys['R'] = Phaser.Input.Keyboard.Key
 keys['Q'] = Phaser.Input.Keyboard.Key
 
+interface TilePlacePositionTemplate {
+  id: number
+  collide: boolean
+}
+
 export default class Game extends Phaser.Scene {
   network!: Network
   private cursors!: NavKeys
-  private map!: Phaser.Tilemaps.Tilemap
+  public map!: Phaser.Tilemaps.Tilemap
   myPlayer!: MyPlayer
   private playerSelector!: Phaser.GameObjects.Zone
   private otherPlayers!: Phaser.Physics.Arcade.Group
@@ -102,20 +110,93 @@ export default class Game extends Phaser.Scene {
 
     //fart shut up
 
-    window.onclick = () => {
-      window.onclick = () => {
-        const pointer = this.input.activePointer
-        this.acceleration.add(this.myPlayer.body.velocity.multiply(new Phaser.Math.Vector2(20, 20)))
+    // window.onclick = () => {
+    //   window.onclick = () => {
+    //     const pointer = this.input.activePointer
+    //     this.acceleration.add(this.myPlayer.body.velocity.multiply(new Phaser.Math.Vector2(20, 20)))
+    //   }
+    // }
+
+    /////dash above, its useles
+
+    /////////////////////////
+
+    this.map.layers.forEach((layerData) => {
+      const layer = layerData.tilemapLayer
+      if (layer) {
+        const tileset = FloorAndGround
+        const tileWidth = tileset.tileWidth
+        const tileHeight = tileset.tileHeight
+        const sourceImage = tileset.image.getSourceImage()
+        console.log(tileset.firstgid)
+        const canvas = document.createElement('canvas')
+        // canvas.width = sourceImage.width
+        canvas.width = tileset.tileWidth
+        // canvas.height = sourceImage.height
+        canvas.height = tileset.tileHeight
+        const context = canvas.getContext('2d')
+        if (context) context.imageSmoothingEnabled = false
+        if (sourceImage instanceof HTMLImageElement || sourceImage instanceof HTMLCanvasElement) {
+          let counter = 0
+          const loopedIndex: number[] = []
+          layer.forEachTile((tile) => {
+            if (context !== undefined && tile.index > 0 && !loopedIndex.includes(tile.index)) {
+              loopedIndex.push(tile.index)
+              setTimeout(() => {
+                const tileX = (tile.index % tileset.rows)
+                const tileY = Math.floor(tile.index / tileset.columns)
+                context!.drawImage(
+                  sourceImage,
+                  tileX * tileWidth,
+                  tileY * tileHeight,
+                  tileWidth,
+                  tileHeight,
+                  2.5,
+                  2.5,
+                  tileWidth-5,
+                  tileHeight-5,
+                )
+//                 const index = 29
+//                 const tileX = (index % tileset.columns)
+//                 const tileY = Math.floor(index / tileset.rows)
+// console.log(tileset.columns)
+
+//                 context!.drawImage(
+//                   sourceImage,
+//                   tileX * tileWidth,
+//                   tileY * tileHeight,
+//                   tileWidth,
+//                   tileHeight,
+//                   2.5,
+//                   2.5,
+//                   tileWidth - 5,
+//                   tileHeight - 5
+//                 )
+
+                const base64String = canvas.toDataURL()
+                tileImages[tile.index] = base64String
+                // console.log(base64String)
+              }, counter++ * 10)
+            }
+          })
+        }
       }
-    }
+    })
 
     window.addEventListener('keydown', (event) => {
-      // Check if the 'W' key (keyCode 87) was pressed
       const key = event.key.toLowerCase()
       if (key == 't') {
-        this.network.placeNewTile(136, this.myPlayer.x, this.myPlayer.y, true)
-      }else if (key == 'y'){
+        const x = Math.round(this.myPlayer.x)
+        const y = Math.round(this.myPlayer.y)
+        const tileID = 29
+        const collide = false
 
+        this.network.placeNewTile(tileID, x, y, collide)
+
+        if (!tilePlaceHash[x]) {
+          tilePlaceHash[x] = {}
+        }
+        tilePlaceHash[x][y] = { id: tileID, collide: collide }
       }
     })
 
@@ -325,50 +406,20 @@ export default class Game extends Phaser.Scene {
     if (content.canCollide) {
       newtile.setCollision(true, true, true, true, true)
     }
-
-    let modifiedMapData = this.map.layers.map((layer) => {
-      return {
-        name: layer.name,
-        data: layer.data.map((row) => {
-          return row.map((tile) => {
-            // Only store tile index (and other properties if needed)
-            return tile.index // or tile properties if you want
-          })
-        }),
-      }
-    })
-
-    // Convert to JSON
-    let jsonString = JSON.stringify(modifiedMapData)
-
-    // You could then save it to a file on the client side (e.g., via Blob or FileSaver.js)
-    let blob = new Blob([jsonString], { type: 'application/json' })
-    let link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = 'modifiedMap.json'
-    link.click()
   }
-
 
   public loadMapFromJSON(jsonContent: any) {
-    if (this.map) {
-      this.map.destroy() // Destroy the old map if it exists
-    }
-
-    this.map = this.make.tilemap({ key: 'tilemap' })
-    const FloorAndGround = this.map.addTilesetImage('FloorAndGround', 'tiles_wall')
-
-    jsonContent.layers.forEach((layerData) => {
-      this.map.createLayer(layerData.name, FloorAndGround)
+    jsonContent.forEach((tileSettings) => {
+      this.network.placeNewTile(
+        tileSettings.id,
+        tileSettings.x,
+        tileSettings.y,
+        tileSettings.collide
+      )
     })
   }
 
-
-
-
-
-
-///////////UPDATE FUNCTION HOLY SHIT HOLY SHIT UPDATE FUNCTION?? IMPOSSIBLE//////////////////////////////
+  ///////////UPDATE FUNCTION HOLY SHIT HOLY SHIT UPDATE FUNCTION?? IMPOSSIBLE//////////////////////////////
 
   update(t: number, dt: number) {
     if (this.myPlayer && this.network) {
@@ -379,7 +430,4 @@ export default class Game extends Phaser.Scene {
       this.myPlayer.setVelocity(newVelocity.x, newVelocity.y)
     }
   }
-
-
 }
-
