@@ -14,12 +14,16 @@ import MobileVirtualJoystick from './components/MobileVirtualJoystick'
 import FileUploadComponent from './components/FileHandler'
 import SidebarComponent from './components/Sidebar'
 
+
+//future me, we need to individually set the elemnts z index.
+
 const Backdrop = styled.div`
   position: absolute;
   height: 100%;
   width: 100%;
+  z-index: 2;
 `
-
+//since i need mousepointer to work, i need to set its z-index, because phaser canvas needed relative pos
 function App() {
   const loggedIn = useAppSelector((state) => state.user.loggedIn)
   const computerDialogOpen = useAppSelector((state) => state.computer.computerDialogOpen)
@@ -28,7 +32,6 @@ function App() {
   const roomJoined = useAppSelector((state) => state.room.roomJoined)
 
   let ui: JSX.Element
-
 
   if (loggedIn) {
     if (computerDialogOpen) {

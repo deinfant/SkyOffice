@@ -16,7 +16,6 @@ const SidebarWrapper = styled.div<{isOpen: boolean}>`
   background-color: #333;
   color: white;
   transition: right 0.3s ease;
-  z-index: 1000;
 `;
 
 const SidebarContent = styled.div`
@@ -35,7 +34,6 @@ const SidebarToggleButton = styled.div`
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  z-index: 1001;
   transition: right 0.3s ease;
 
   &:hover {

@@ -122,7 +122,6 @@ export class SkyOffice extends Room<OfficeState> {
 
 
     this.onMessage(Message.PLACE_TILE, (client, message: {tile:any, worldX:any , worldY:any , canCollide?:any , layer?:any}) => {
-      console.log('reciveed tile place request')
       this.broadcast(
         Message.PLACE_TILE,
         { clientId: client.sessionId, content: message},

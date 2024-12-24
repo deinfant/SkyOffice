@@ -32,26 +32,9 @@ const Backdrop = styled.div<{ isMovable: boolean }>`
   max-height: 50%;
   max-width: 100%;
   cursor: ${({ isMovable }) => (isMovable ? 'move' : 'unset')};
+  pointer-events: auto;
 `
 
-// const Backdrop = styled.div`
-//   position: fixed;
-//   bottom: 60px;
-//   left: 0;
-//   height: 400px;
-//   width: 500px;
-//   max-height: 50%;
-//   max-width: 100%;
-//   background-color: #333;
-//   border-radius: 8px;
-//   overflow: hidden;
-//   transition: all 0.3s ease;
-//   z-index: 1000;
-//   cursor: move; /* Changes the cursor when dragging */
-//   display: flex;
-//   flex-direction: column;
-//   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-// `;
 
 const Wrapper = styled.div`
   position: relative;

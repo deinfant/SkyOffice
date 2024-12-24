@@ -15,7 +15,7 @@ export interface TilePlaceLogTemplate {
   
   export const tilePlaceHash: { [key: number]: { [key: number]: TilePlacePositionTemplate}} = {};
 
-
+  export const editorInfomation = {["SelectedTileID"]: -1};
 
 
 

@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { game } from '../PhaserGame'
-import { tileImages } from '../globals'
-
+import { tileImages, editorInfomation } from '../globals'
 
 // Styled Components
 const InventoryWrapper = styled.div`
@@ -20,15 +19,30 @@ const InventoryWrapper = styled.div`
   scrollbar-color: #888 #333; /* Scrollbar color (modern browsers) */
 `
 
-const Slot = styled.div<{ hasItem: boolean }>`
+//#45a049 (green)
+
+const Slot = styled.div<{slotID}>`
   width: 80px;
   height: 80px;
-  background-color: ${({ hasItem }) => (hasItem ? '#444' : '#222')};
+  background-color: ${({slotID}) => ((slotID == editorInfomation.SelectedTileID) ? '#45a049 ' : '#222')};
   border: 1px solid #555;
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  transition: all 0.1s ease;
+
+  &:hover {
+    background-color: #ffffff;
+    transform: scale(1.1);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.95);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  }
 `
 
 const ItemIcon = styled.img`
@@ -37,29 +51,30 @@ const ItemIcon = styled.img`
   object-fit: fit;
 `
 
-
-
-const GAME = game();
+const GAME = game()
 
 export default function Inventory() {
-
-  const [inventory, setInventory] = useState<{[key: number]: string}>(tileImages)
-  
-  
-  
+  const [inventory, setInventory] = useState<{ [key: number]: string }>(tileImages)
+  const [, forceUpdate] = useState(0)
   return (
     <>
-
       <InventoryWrapper>
         {Object.entries(inventory).map(([key, value]) => {
+          const slotID = Number(key)
+
+          const handleClick = () => {
+            editorInfomation.SelectedTileID = editorInfomation.SelectedTileID == slotID ? -1 : slotID
+            forceUpdate((n) => n + 1);
+            console.log(editorInfomation.SelectedTileID)
+          }
+          
           return (
-            <Slot key={key} hasItem={!!value}>
-              {key && <ItemIcon src= {value} />}
+            <Slot slotID = {slotID} onClick={handleClick}>
+              {key && <ItemIcon src={value} />}
             </Slot>
           )
         })}
       </InventoryWrapper>
-      
     </>
   )
 }

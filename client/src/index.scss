@@ -17,6 +17,7 @@ body {
 #phaser-container {
   canvas {
     display: block;
+    position: relative; ///what the actual fuck bro this fixed the pointer? WHAT? FUCK YOU PHASER YOU FUCKING CUNT!
   }
 }
 
