@@ -1,22 +1,17 @@
 export interface TilePlaceLogTemplate {
-    id: number;
-    x: number;
-    y: number;
-    collide: boolean;
-  }
-  
-  
-  
-  
-  interface TilePlacePositionTemplate {
-    id: number;
-    collide: boolean;
-  }
-  
-  export const tilePlaceHash: { [key: number]: { [key: number]: TilePlacePositionTemplate}} = {};
+  id: number
+  x: number
+  y: number
+  collide: boolean
+}
 
-  export const editorInfomation = {["SelectedTileID"]: -1};
+interface TilePlacePositionTemplate {
+  id: number
+  collide: boolean
+}
 
+export const tilePlaceHash: { [key: number]: { [key: number]: TilePlacePositionTemplate } } = {}
 
+export const editorInfomation = { ['SelectedTileID']: -1 }
 
-  export const tileImages = {};
+export const tileImages = {}

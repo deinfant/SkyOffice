@@ -149,8 +149,6 @@ export default class Game extends Phaser.Scene {
               //setTimeout(() => {
               const tileX = (tile.index - 1) % tileset.columns
               const tileY = Math.floor(tile.index / tileset.columns)
-
-              console.log(tile.index - 1, tileX * tileWidth, tileY * tileHeight)
               context!.clearRect(0, 0, canvas.width, canvas.height)
               context!.drawImage(
                 sourceImage,
@@ -178,11 +176,10 @@ export default class Game extends Phaser.Scene {
       if (key == 't') {
         const x = Math.round(this.myPlayer.x)
         const y = Math.round(this.myPlayer.y)
-        
       }
     })
 
-//this.input.on is entirely unusable
+    //this.input.on is entirely unusable
 
     document.addEventListener('pointerdown', (event) => {
       if (editorInfomation.SelectedTileID != -1 && this.ghostTile) {
@@ -304,6 +301,7 @@ export default class Game extends Phaser.Scene {
     this.network.onItemUserRemoved(this.handleItemUserRemoved, this)
     this.network.onChatMessageAdded(this.handleChatMessageAdded, this)
     this.network.onNewTilePlaced(this.handleTilePlacement, this)
+    this.network.updateMap(this.handleMapUpdate, this)
   }
 
   private handleItemSelectorOverlap(playerSelector, selectionItem) {
@@ -358,7 +356,7 @@ export default class Game extends Phaser.Scene {
 
   // function to add new player to the otherPlayer group
   private handlePlayerJoined(newPlayer: IPlayer, id: string) {
-    console.log("who joined")
+    console.log('who joined')
     console.log(newPlayer)
     if (id === this.myPlayer.playerId) return
     if (this.otherPlayerMap.has(id)) return
@@ -422,12 +420,35 @@ export default class Game extends Phaser.Scene {
     otherPlayer?.updateDialogBubble(content)
   }
 
-  private handleTilePlacement(playerId: string, content: any) {
+  private handleTilePlacement(playerId: string|undefined, content: any) {
     console.log(content)
-    const newtile = this.map.putTileAtWorldXY(content.tile, content.worldX, content.worldY, undefined, undefined, content.layer)
+    const newtile = this.map.putTileAtWorldXY(
+      content.tile,
+      content.worldX,
+      content.worldY,
+      undefined,
+      undefined,
+      content.layer
+    )
     if (content.canCollide) {
       newtile.setCollision(true, true, true, true, true)
     }
+  }
+
+  private handleMapUpdate(hashTable) {
+    console.log('yessss oh no fuck you dumb fucking')
+    console.log(hashTable)
+    for (const x in hashTable) {
+      const inner = hashTable[x]
+      for (const y in inner) {
+        console.log(x, y)
+        const info = hashTable[x][y]
+        console.log(info)
+        this.handleTilePlacement(undefined, {worldX: x, worldY: y, tile: info.id, canCollide: info.collide, layer: "Ground"})
+      }
+    }
+
+    
   }
 
   public loadMapFromJSON(jsonContent: any) {

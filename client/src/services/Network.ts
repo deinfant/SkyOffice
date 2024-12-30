@@ -165,6 +165,12 @@ export default class Network {
       store.dispatch(setJoinedRoomData(content))
     })
 
+    this.room.onMessage(Message.UPDATE_MAP, (content) => {
+      console.log('hey!')
+      phaserEvents.emit(Event.UPDATE_MAP, content.mapChanges)
+    })
+
+
     // when a user sends a message
     this.room.onMessage(Message.ADD_CHAT_MESSAGE, ({ clientId, content }) => {
       phaserEvents.emit(Event.UPDATE_DIALOG_BUBBLE, clientId, content)
@@ -173,7 +179,6 @@ export default class Network {
     this.room.onMessage(Message.PLACE_TILE, ({ clientId, content }) => {
       console.log(content)
       phaserEvents.emit(Event.TILE_PLACED, clientId, content)
-      //phaserEvents.emit(Event.TILE_PLACED, content.tile, content.x, content.y, content.canCollide, content.layer)
     })
 
     // when a peer disconnects with myPeer
@@ -261,6 +266,13 @@ export default class Network {
     phaserEvents.on(Event.TILE_PLACED, callback, context)
   }
 
+  updateMap(
+    callback: any,
+    context?: any 
+  ) {
+    phaserEvents.on(Event.UPDATE_MAP, callback, context)
+  }
+
   // method to send player updates to Colyseus server
   updatePlayer(currentX: number, currentY: number, currentAnim: string) {
     this.room?.send(Message.UPDATE_PLAYER, { x: currentX, y: currentY, anim: currentAnim })
@@ -275,6 +287,9 @@ export default class Network {
   placeNewTile(tile: number | Phaser.Tilemaps.Tile, worldX: number, worldY: number, canCollide?: boolean, layer?: string | number | Phaser.Tilemaps.TilemapLayer) {
     this.room?.send(Message.PLACE_TILE, {tile, worldX, worldY, canCollide, layer})
   }
+
+
+  
 
 
   // method to send ready-to-connect signal to Colyseus server

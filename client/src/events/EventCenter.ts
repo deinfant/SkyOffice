@@ -15,4 +15,5 @@ export enum Event {
   ITEM_USER_REMOVED = 'item-user-removed',
   UPDATE_DIALOG_BUBBLE = 'update-dialog-bubble',
   TILE_PLACED = "tile-placed",
+  UPDATE_MAP = "update-map",
 }

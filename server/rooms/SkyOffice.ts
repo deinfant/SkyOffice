@@ -17,11 +17,22 @@ import {
 } from './commands/WhiteboardUpdateArrayCommand'
 import ChatMessageUpdateCommand from './commands/ChatMessageUpdateCommand'
 
+
+interface TilePlacePositionTemplate {
+  id: number
+  collide: boolean
+}
+
 export class SkyOffice extends Room<OfficeState> {
   private dispatcher = new Dispatcher(this)
   private name: string
   private description: string
   private password: string | null = null
+  public tilePlaceHash: { [key: number]: { [key: number]: TilePlacePositionTemplate}} = {
+    704: {
+      480: { id: 1, collide: true },
+    },
+  };
 
   async onCreate(options: IRoomData) {
     const { name, description, password, autoDispose } = options
@@ -122,11 +133,21 @@ export class SkyOffice extends Room<OfficeState> {
 
 
     this.onMessage(Message.PLACE_TILE, (client, message: {tile:any, worldX:any , worldY:any , canCollide?:any , layer?:any}) => {
-      this.broadcast(
-        Message.PLACE_TILE,
-        { clientId: client.sessionId, content: message},
-        //{ except: client }
-      )
+      // this.broadcast(
+      //   Message.PLACE_TILE,
+      //   { clientId: client.sessionId, content: message},
+      //   //{ except: client }
+      // )
+      console.log("hey hey i have a boner")
+      if (!this.tilePlaceHash[message.worldX]) {
+        this.tilePlaceHash[message.worldX] = {}
+      }
+      this.tilePlaceHash[message.worldX][message.worldY] = { id: message.tile, collide: message.canCollide}
+
+      this.broadcast(Message.UPDATE_MAP, {
+        mapChanges: this.tilePlaceHash,
+      })
+
     })
 
 
@@ -150,10 +171,6 @@ export class SkyOffice extends Room<OfficeState> {
         }
       })
     })
-
-
-
-    
 
     // when a player send a chat message, update the message array and broadcast to all connected clients except the sender
     this.onMessage(Message.ADD_CHAT_MESSAGE, (client, message: { content: string }) => {
@@ -190,6 +207,16 @@ export class SkyOffice extends Room<OfficeState> {
       name: this.name,
       description: this.description,
     })
+    
+    console.log("joineddddd")
+    setTimeout(() => {
+      console.log("yooo upsdate tat fhcjing maop")
+      client.send(Message.UPDATE_MAP, {
+        mapChanges: this.tilePlaceHash,
+      })
+    }, 600);
+    
+
   }
 
   onLeave(client: Client, consented: boolean) {

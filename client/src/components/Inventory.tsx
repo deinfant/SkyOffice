@@ -21,10 +21,11 @@ const InventoryWrapper = styled.div`
 
 //#45a049 (green)
 
-const Slot = styled.div<{slotID}>`
+const Slot = styled.div<{ slotID }>`
   width: 80px;
   height: 80px;
-  background-color: ${({slotID}) => ((slotID == editorInfomation.SelectedTileID) ? '#45a049 ' : '#222')};
+  background-color: ${({ slotID }) =>
+    slotID == editorInfomation.SelectedTileID ? '#45a049 ' : '#222'};
   border: 1px solid #555;
   border-radius: 4px;
   display: flex;
@@ -63,13 +64,14 @@ export default function Inventory() {
           const slotID = Number(key)
 
           const handleClick = () => {
-            editorInfomation.SelectedTileID = editorInfomation.SelectedTileID == slotID ? -1 : slotID
-            forceUpdate((n) => n + 1);
+            editorInfomation.SelectedTileID =
+              editorInfomation.SelectedTileID == slotID ? -1 : slotID
+            forceUpdate((n) => n + 1)
             console.log(editorInfomation.SelectedTileID)
           }
-          
+
           return (
-            <Slot slotID = {slotID} onClick={handleClick}>
+            <Slot slotID={slotID} onClick={handleClick}>
               {key && <ItemIcon src={value} />}
             </Slot>
           )

@@ -11,5 +11,6 @@ export enum Message {
   VIDEO_CONNECTED,
   ADD_CHAT_MESSAGE,
   SEND_ROOM_DATA,
+  UPDATE_MAP,
   PLACE_TILE,
 }
