@@ -20,7 +20,7 @@ import { ItemType } from '../../../types/Items'
 import store from '../stores'
 import { setFocused, setShowChat } from '../stores/ChatStore'
 import { NavKeys, Keyboard } from '../../../types/KeyboardState'
-import { tilePlaceHash, TilePlaceLogTemplate, tileImages, editorInfomation } from '../globals'
+import { TilePlaceLogTemplate, tileImages, editorInfomation } from '../globals'
 import { phaserEvents, Event } from '../events/EventCenter'
 import { Clock } from 'colyseus'
 import { Console, log } from 'console'
@@ -49,7 +49,7 @@ export default class Game extends Phaser.Scene {
   private otherPlayerMap = new Map<string, OtherPlayer>()
   computerMap = new Map<string, Computer>()
   private whiteboardMap = new Map<string, Whiteboard>()
-  public ghostTile: Phaser.Tilemaps.Tile | null = null
+  public ghostTile: any
   acceleration = new Phaser.Math.Vector2()
 
   constructor() {
@@ -121,20 +121,53 @@ export default class Game extends Phaser.Scene {
 
     /////////////////////////
 
+    const tileset = FloorAndGround
+    const tileWidth = tileset.tileWidth
+    const tileHeight = tileset.tileHeight
+    const sourceImage = tileset.image.getSourceImage()
+    const canvas = document.createElement('canvas')
+    // canvas.width = sourceImage.width
+    canvas.width = tileset.tileWidth
+    // canvas.height = sourceImage.height
+    canvas.height = tileset.tileHeight
+    const context = canvas.getContext('2d')
+    if (context) context.imageSmoothingEnabled = false
+
+    const drawTileImage = (
+      drawSourceImage = sourceImage,
+      tileX,
+      tileY,
+      tileDrawWidth = tileWidth,
+      tileDrawHeight = tileHeight,
+      frameSize = 5
+    ) => {
+      if (
+        !(
+          drawSourceImage instanceof HTMLImageElement ||
+          drawSourceImage instanceof HTMLCanvasElement
+        )
+      ) {
+        return
+      }
+      context!.clearRect(0, 0, canvas.width, canvas.height)
+      context!.drawImage(
+        drawSourceImage,
+        tileX * tileDrawWidth,
+        tileY * tileDrawHeight,
+        tileDrawWidth,
+        tileDrawHeight,
+        frameSize / 2,
+        frameSize / 2,
+        32 - frameSize,
+        32 - frameSize
+      )
+      const base64String = canvas.toDataURL()
+      return base64String
+    }
+
     this.map.layers.forEach((layerData) => {
       const layer = layerData.tilemapLayer
       if (layer) {
-        const tileset = FloorAndGround
-        const tileWidth = tileset.tileWidth
-        const tileHeight = tileset.tileHeight
-        const sourceImage = tileset.image.getSourceImage()
-        const canvas = document.createElement('canvas')
-        // canvas.width = sourceImage.width
-        canvas.width = tileset.tileWidth
-        // canvas.height = sourceImage.height
-        canvas.height = tileset.tileHeight
-        const context = canvas.getContext('2d')
-        if (context) context.imageSmoothingEnabled = false
         if (sourceImage instanceof HTMLImageElement || sourceImage instanceof HTMLCanvasElement) {
           //let counter = 0
           const loopedIndex: number[] = []
@@ -146,30 +179,22 @@ export default class Game extends Phaser.Scene {
               !loopedIndex.includes(tile.index)
             ) {
               loopedIndex.push(tile.index)
-              //setTimeout(() => {
               const tileX = (tile.index - 1) % tileset.columns
               const tileY = Math.floor(tile.index / tileset.columns)
-              context!.clearRect(0, 0, canvas.width, canvas.height)
-              context!.drawImage(
-                sourceImage,
-                tileX * tileWidth,
-                tileY * tileHeight,
-                tileWidth,
-                tileHeight,
-                2.5,
-                2.5,
-                tileWidth - 5,
-                tileHeight - 5
-              )
-              const base64String = canvas.toDataURL()
+              const base64String = drawTileImage(undefined, tileX, tileY)
               tileImages[tile.index] = base64String
-              // console.log(base64String)
-              //}, counter++ * 10)
             }
           })
         }
       }
     })
+
+    const dude = this.textures.get('basement').source[0].image
+    if (dude instanceof HTMLImageElement || dude instanceof HTMLCanvasElement) {
+      const base64String = drawTileImage(dude, 0, 0, 96, 96, -20)
+      const indexs = JSON.stringify([1, 2, 4, 17, 18, 19, 33, 34, 35])
+      tileImages[indexs] = base64String
+    }
 
     window.addEventListener('keydown', (event) => {
       const key = event.key.toLowerCase()
@@ -188,15 +213,47 @@ export default class Game extends Phaser.Scene {
 
         const tileID = editorInfomation.SelectedTileID
         const collide = false
-
+        if (this.ghostTile) ghostLayer.removeTileAt(this.ghostTile.x, this.ghostTile.y)
         this.network.placeNewTile(tileID, x, y, collide, 'Ground')
-
-        if (!tilePlaceHash[x]) {
-          tilePlaceHash[x] = {}
-        }
-        tilePlaceHash[x][y] = { id: tileID, collide: collide }
       }
     })
+    // Function to get the column and row of a tile in the grid
+    function getTilePosition(tileIndex) {
+      const column = tileIndex % tileset.columns // column = index % number of columns
+      const row = Math.floor(tileIndex / tileset.columns) // row = Math.floor(index / columns)
+      return { column, row }
+    }
+    function findTileIndex(tiles, tileId) {
+      return tiles.indexOf(tileId)
+    }
+    function getMiddleId(ids) {
+      if (ids.length === 0) {
+        return null // or some other value to indicate it's empty
+      }
+      const middleIndex = Math.floor(ids.length / 2)
+      return ids[middleIndex]
+    }
+    // Function to calculate the offset of a tile from the middle tile
+    function getOffsetFromMiddle(tiles, tileId) {
+      if (!tiles || !tileId) {
+        return false // or some error handling
+      }
+      const middleTileId = getMiddleId(tiles)
+      const middleIndex = findTileIndex(tiles, middleTileId)
+      const targetIndex = findTileIndex(tiles, tileId)
+
+      if (middleIndex === -1 || targetIndex === -1) {
+        return null // If the tile doesn't exist
+      }
+
+      const middlePos = getTilePosition(middleIndex)
+      const targetPos = getTilePosition(targetIndex)
+
+      const columnOffset = targetPos.column - middlePos.column
+      const rowOffset = targetPos.row - middlePos.row
+
+      return { columnOffset, rowOffset }
+    }
 
     document.addEventListener('pointermove', (event) => {
       if (editorInfomation.SelectedTileID != -1) {
@@ -204,16 +261,45 @@ export default class Game extends Phaser.Scene {
         pointer.x = event.clientX
         pointer.y = event.clientY
         this.game.input.mousePointer.updateWorldPoint(this.cameras.main)
-        if (this.ghostTile) ghostLayer.removeTileAt(this.ghostTile.x, this.ghostTile.y)
-        this.ghostTile = this.map.putTileAtWorldXY(
-          editorInfomation.SelectedTileID,
-          pointer.worldX,
-          pointer.worldY,
-          undefined,
-          undefined,
-          'GhostGround'
-        )
-        if (this.ghostTile) this.ghostTile.tint = 0x8affa9
+
+        if (!Array.isArray(editorInfomation.SelectedTileID)) {
+          if (this.ghostTile) ghostLayer.removeTileAt(this.ghostTile.x, this.ghostTile.y)
+          this.ghostTile = this.map.putTileAtWorldXY(
+            editorInfomation.SelectedTileID,
+            pointer.worldX,
+            pointer.worldY,
+            undefined,
+            undefined,
+            'GhostGround'
+          )
+          this.ghostTile.tint = 0x8affa9
+        } else {
+          if (this.ghostTile && this.ghostTile[0]) {
+            for (const tile of this.ghostTile) {
+              ghostLayer.removeTileAt(tile.x, tile.y)
+            }
+          }
+          this.ghostTile = []
+          for (const id of editorInfomation.SelectedTileID) {
+            const offset = getOffsetFromMiddle(editorInfomation.SelectedTileID, id)
+            if (!(offset && typeof offset === 'object')) {
+              return
+            }
+            const { columnOffset, rowOffset } = offset
+            console.log(columnOffset, rowOffset)
+
+            const newTile = this.map.putTileAtWorldXY(
+              id,
+              pointer.worldX + columnOffset,
+              pointer.worldY + rowOffset,
+              undefined,
+              undefined,
+              'GhostGround'
+            )
+            console.log(newTile)
+            this.ghostTile.push(newTile)
+          }
+        }
       }
     })
 
@@ -420,7 +506,7 @@ export default class Game extends Phaser.Scene {
     otherPlayer?.updateDialogBubble(content)
   }
 
-  private handleTilePlacement(playerId: string|undefined, content: any) {
+  private handleTilePlacement(playerId: string | undefined, content: any) {
     console.log(content)
     const newtile = this.map.putTileAtWorldXY(
       content.tile,
@@ -444,11 +530,15 @@ export default class Game extends Phaser.Scene {
         console.log(x, y)
         const info = hashTable[x][y]
         console.log(info)
-        this.handleTilePlacement(undefined, {worldX: x, worldY: y, tile: info.id, canCollide: info.collide, layer: "Ground"})
+        this.handleTilePlacement(undefined, {
+          worldX: x,
+          worldY: y,
+          tile: info.id,
+          canCollide: info.collide,
+          layer: 'Ground',
+        })
       }
     }
-
-    
   }
 
   public loadMapFromJSON(jsonContent: any) {
@@ -474,9 +564,9 @@ export default class Game extends Phaser.Scene {
       if (editorInfomation.SelectedTileID == -1) {
         this.ghostTile = null
       }
-      if (this.ghostTile) {
-        this.ghostTile.alpha = 0.5 + Math.sin(this.time.now / 100) * 0.25
-      }
+      // if (this.ghostTile) {
+      //   this.ghostTile.alpha = 0.5 + Math.sin(this.time.now / 100) * 0.25
+      // }
     }
   }
 }

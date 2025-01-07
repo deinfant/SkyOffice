@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { game } from '../PhaserGame'
 import { tileImages, editorInfomation } from '../globals'
+import { json } from 'express'
 
 // Styled Components
 const InventoryWrapper = styled.div`
@@ -61,7 +62,7 @@ export default function Inventory() {
     <>
       <InventoryWrapper>
         {Object.entries(inventory).map(([key, value]) => {
-          const slotID = Number(key)
+          const slotID = (typeof key === "number") ? (key) : JSON.parse(key)
 
           const handleClick = () => {
             editorInfomation.SelectedTileID =
